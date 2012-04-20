@@ -1,0 +1,67 @@
+#!/bin/sh
+
+# Install for Ubuntu/Debian, other distros will need some modifications
+
+CIF_DIR=/usr/local/cif-rest-sphinx
+sudo mkdir $CIF_DIR
+cd $CIF_DIR
+
+# Install Sphinx Search from http://sphinxsearch.com/downloads/release/:
+wget "http://sphinxsearch.com/downloads/accept.php?file=sphinxsearch_2.0.4-lucid_amd64.deb"
+sudo dpkg -i sphinxsearch_2.0.4-lucid_amd64.deb
+
+# Install cpanminus (faster Perl installer than regular cpan)
+sudo cpan -i App::cpanm
+
+# Install required modules (starman is optional)
+sudo cpanm Plack Config::JSON Moose starman
+
+# Get cif-rest-sphinx
+wget https://raw.github.com/collectiveintel/cif-rest-sphinx/master/CIF.psgi
+wget https://raw.github.com/collectiveintel/cif-rest-sphinx/master/sphinx.conf
+wget https://raw.github.com/collectiveintel/cif-rest-sphinx/master/cif-rest-sphinx.conf
+
+# Backup and override existing sphinx.conf
+cp /etc/sphinxsearch/sphinx.conf /etc/sphinxsearch/sphinx.conf.bak
+cp sphinx.conf /etc/sphinxsearch/sphinx.conf
+
+# Index
+indexer --all
+
+# Restart sphinx
+service sphinxsearch restart
+
+# Copy the config
+sudo cp cif-rest-sphinx.conf /etc/cif-rest-sphinx.conf
+# Edit as necessary for apikeys, etc.
+
+# Run using starman, preloading modules for speed
+starman --port 80 --daemonize -MMoose $CIF_DIR/CIF.psgi
+
+# Alternatively, you can install using Apache as the web server.  Install Plack::Handler::Apache2 and use the below config example:
+
+# Template for a VirtualHost with SSL
+# Note: to use the template, rename it to /etc/apache2/vhost.d/yourvhost.conf.
+# Files must have the .conf suffix to be loaded.
+#
+# See /usr/share/doc/packages/apache2/README.QUICKSTART for further hints
+# about virtual hosts.
+#NameVirtualHost localhost:80
+#<VirtualHost *:80>
+#	#  General setup for the virtual host
+#	ServerName cif:80
+#	DocumentRoot $CIF_DIR
+#	SetEnv CONF /etc/cif-rest-sphinx.conf
+#	<Location "/">
+#		Order Allow,Deny
+#		Allow from all
+#		SetHandler perl-script
+#		PerlResponseHandler Plack::Handler::Apache2
+#		PerlSetVar psgi_app $CIF_DIR/CIF.psgi
+#	</Location>
+#</VirtualHost>                   
+
+# Add cron job to re-index every 15 minutes
+crontab -e
+# Add:
+#03,18,33,48 * * * * indexer --all --rotate > /dev/null 2>&1    
