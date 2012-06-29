@@ -7,7 +7,7 @@ sudo mkdir $CIF_DIR
 cd $CIF_DIR
 
 # Install Sphinx Search from http://sphinxsearch.com/downloads/release/:
-wget "http://sphinxsearch.com/downloads/accept.php?file=sphinxsearch_2.0.4-lucid_amd64.deb"
+wget "http://sphinxsearch.com/files/sphinxsearch_2.0.4-lucid_amd64.deb"
 sudo dpkg -i sphinxsearch_2.0.4-lucid_amd64.deb
 
 # Install cpanminus (faster Perl installer than regular cpan)
