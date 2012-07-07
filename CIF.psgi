@@ -61,7 +61,8 @@ sub BUILDARGS {
 	$params{db} = DBI->connect($params{conf}->{dsn}, '', '', 
 		{ 
 			mysql_multi_statements => 1,
-			mysql_bind_type_guessing => 1, 
+			mysql_bind_type_guessing => 1,
+			mysql_auto_reconnect => 1,
 		}) or die($DBI::errstr);
 	
 	return \%params;
