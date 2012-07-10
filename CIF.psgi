@@ -17,7 +17,7 @@ sub call {
 	$res->content_type('application/javascript');
 	$res->header('Access-Control-Allow-Origin' => '*');
 	
-	my ($index, $query, $apikey) = $req->request_uri =~ /(\w+)?\/([\w\.]+)(?:\?apikey=(.+))?$/;
+	my ($index, $query, $apikey) = $req->request_uri =~ /(\w+)?\/([\w\.]+\*?)(?:\?apikey=(.+))?$/;
 	$index ||= 'all';
 	my $body;
 	if (not exists $self->conf->{apikeys} or (exists $self->conf->{apikeys}->{$apikey} and scalar (grep $index, @{ $self->conf->{apikeys}->{$apikey} }))){
